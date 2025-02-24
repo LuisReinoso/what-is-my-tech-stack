@@ -8,6 +8,7 @@ type FormatConfig = {
   section: string;
   list: string;
   codeBlock: string;
+  separator?: string;
 };
 
 type FormatterOptions = {
@@ -245,34 +246,32 @@ export class OutputFormatter {
     }
 
     // Format the filtered technologies
-    const lines = content
-      .split('\n')
-      .map((line) => {
-        line = line.trim();
-        if (!line.startsWith('•') && !line.startsWith('-') && !line.startsWith('*')) {
-          return '';
+    const formattedTechs = filteredTechs.map((techName) => {
+      const tech =
+        content
+          .split('\n')
+          .find((line) => line.trim().slice(1).trim().startsWith(techName))
+          ?.slice(1)
+          .trim() || techName;
+
+      if (showVersions) {
+        const dep = dependencies.find((d) => d.name === techName);
+        if (dep) {
+          const majorVersion = dep.version.split('.')[0];
+          return `${formatConfig.list}${tech} (v${majorVersion})`.trim();
         }
+      }
 
-        const tech = line.slice(1).trim();
-        const techName = tech.split(' ')[0];
+      return `${formatConfig.list}${tech}`.trim();
+    });
 
-        if (!filteredTechs.includes(techName)) {
-          return '';
-        }
+    // For inline format, join with separator
+    if (format === 'inline' && formatConfig.separator) {
+      return formattedTechs.join(formatConfig.separator).trim();
+    }
 
-        if (showVersions) {
-          const dep = dependencies.find((d) => d.name === techName);
-          if (dep) {
-            const majorVersion = dep.version.split('.')[0];
-            return `${formatConfig.list}${tech} (v${majorVersion})`;
-          }
-        }
-
-        return formatConfig.list + tech;
-      })
-      .filter((line) => line);
-
-    return lines.join('\n').trim();
+    // For other formats, join with newlines
+    return formattedTechs.join('\n').trim();
   }
 
   /**

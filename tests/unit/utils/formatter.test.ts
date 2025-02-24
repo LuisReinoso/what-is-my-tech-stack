@@ -78,6 +78,39 @@ describe('OutputFormatter', () => {
       const result = await OutputFormatter.format(content, 'text');
       expect(result).toBe('• react\n• typescript');
     });
+
+    it('should format content in inline format', async () => {
+      const content = '• react\n• express\n• typescript';
+      const result = await OutputFormatter.format(content, 'inline');
+      expect(result).toBe('react, express, typescript');
+    });
+
+    it('should format content in inline format with versions', async () => {
+      const content = '• react\n• express\n• typescript';
+      const dependencies = [
+        { name: 'react', version: '17.0.0' },
+        { name: 'express', version: '4.17.1' },
+        { name: 'typescript', version: '4.5.0' },
+      ];
+
+      const result = await OutputFormatter.format(content, 'inline', {
+        showVersions: true,
+        dependencies,
+      });
+
+      expect(result).toBe('react (v17), express (v4), typescript (v4)');
+    });
+
+    it('should filter inline format by focus area', async () => {
+      const content = '• react\n• express\n• typescript';
+      (AIClient.filterTechnologies as jest.Mock).mockResolvedValueOnce(['react', 'typescript']);
+
+      const result = await OutputFormatter.format(content, 'inline', {
+        focusArea: 'frontend',
+      });
+
+      expect(result).toBe('react, typescript');
+    });
   });
 
   describe('formatCategories', () => {

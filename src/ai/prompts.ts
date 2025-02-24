@@ -121,6 +121,14 @@ export const OUTPUT_FORMATS = {
     list: '• ',
     codeBlock: '',
   },
+  inline: {
+    header: '',
+    subheader: '',
+    section: '',
+    list: '',
+    codeBlock: '',
+    separator: ', ',
+  },
   json: {
     type: 'json_object',
   },
