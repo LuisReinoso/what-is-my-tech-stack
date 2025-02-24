@@ -2,7 +2,9 @@
 
 🔍 AI-powered CLI tool that analyzes your project's tech stack. Perfect for CVs, documentation, and project insights.
 
-<img src="demo.gif" style="display: block; margin: 0 auto;" alt="Demo of What Is My Tech Stack" />
+<p align="center">
+  <img src="demo.gif" alt="Demo of What Is My Tech Stack" />
+</p>
 
 ## Quick Start
 
@@ -29,7 +31,32 @@ what-is-my-tech-stack
 what-is-my-tech-stack
 ```
 ```
-React, TypeScript, Express.js, PostgreSQL, Jest, ESLint, Prettier, Husky
+testing
+@types/jest
+jest
+ts-jest
+
+linter
+@typescript-eslint/eslint-plugin
+@typescript-eslint/parser
+eslint
+eslint-config-prettier
+prettier
+
+typescript
+@types/node
+@types/ora
+typescript
+
+utilities
+chalk
+commander
+dotenv
+
+other
+openai
+ora
+husky
 ```
 
 ### Inline Format
@@ -37,20 +64,7 @@ React, TypeScript, Express.js, PostgreSQL, Jest, ESLint, Prettier, Husky
 what-is-my-tech-stack --format inline
 ```
 ```
-### typescript
-• @types/node
-• @types/ora
-• typescript
-
-### utilities
-• chalk
-• commander
-• dotenv
-
-### other
-• openai
-• ora
-• husky
+chalk, commander, dotenv, openai, ora, @types/jest, @types/node, @types/ora, @typescript-eslint/eslint-plugin, @typescript-eslint/parser, eslint, eslint-config-prettier, husky, jest, prettier, ts-jest, typescript
 ```
 
 ### JSON Format
