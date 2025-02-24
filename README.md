@@ -1,154 +1,132 @@
 # What Is My Tech Stack?
 
-A CLI tool that analyzes your project's dependencies and generates a clear, human-readable description of your tech stack using AI. Perfect for developers preparing their CVs or documenting their projects.
+🔍 AI-powered CLI tool that analyzes your project's tech stack. Perfect for CVs, documentation, and project insights.
 
-## Features
+<img src="demo.gif" style="display: block; margin: 0 auto;" alt="Demo of What Is My Tech Stack" />
 
-- 📦 Analyzes package.json and requirements.txt files
-- 🤖 Uses OpenAI to generate human-readable descriptions
-- 📝 Provides formatted output ready for CVs/portfolios
-- 🚀 Supports both Node.js and Python projects
-- 💡 Intelligent categorization of technologies
-
-## Installation
+## Quick Start
 
 ```bash
-# Install globally using pnpm
-pnpm add -g what-is-my-tech-stack
+# Install globally
+npm install -g what-is-my-tech-stack
 
-# Or run directly using pnpm
-pnpm dlx what-is-my-tech-stack
-```
-
-## Usage
-
-Basic usage (in your project directory):
-
-```bash
+# Run in your project directory
 what-is-my-tech-stack
 ```
 
-With options:
+## Features
 
+- 🤖 AI-powered tech stack analysis
+- 📦 Supports Node.js (package.json) and Python (requirements.txt)
+- 🎯 Focus on frontend/backend/specific tech
+- 📝 Multiple output formats (markdown, text, json, inline)
+- 🔄 Version tracking support
+
+## Example Outputs
+
+### Default (Markdown)
 ```bash
-# Analyze a specific directory
-what-is-my-tech-stack --path /path/to/project
-
-# Output in different formats
-what-is-my-tech-stack --format markdown
-what-is-my-tech-stack --format text
+what-is-my-tech-stack
+```
+```
+React, TypeScript, Express.js, PostgreSQL, Jest, ESLint, Prettier, Husky
 ```
 
-### Options
+### Inline Format
+```bash
+what-is-my-tech-stack --format inline
+```
+```
+### typescript
+• @types/node
+• @types/ora
+• typescript
 
-- `-p, --path <path>`: Path to the project directory (default: current directory)
-- `-f, --format <format>`: Output format, either 'markdown' or 'text' (default: markdown)
-- `-v, --version`: Show version number
-- `-h, --help`: Show help
+### utilities
+• chalk
+• commander
+• dotenv
 
-## Environment Variables
+### other
+• openai
+• ora
+• husky
+```
 
-Create a `.env` file in your project root:
+### JSON Format
+```bash
+what-is-my-tech-stack --format json
+```
+```json
+{
+  "typescript": [
+    "@types/node",
+    "@types/ora",
+    "typescript"
+  ],
+  "utilities": [
+    "chalk",
+    "commander",
+    "dotenv"
+  ],
+  "other": [
+    "openai",
+    "ora",
+    "husky"
+  ]
+}
+```
 
+
+
+### Specific Tech Focus
+```bash
+what-is-my-tech-stack --tech-focus nodejs
+```
+```
+typescript
+• @types/node
+
+utilities
+• chalk
+• commander
+• dotenv
+```
+
+## Usage Options
+
+```bash
+# Basic usage (current directory)
+what-is-my-tech-stack
+
+# Specific directory
+what-is-my-tech-stack --path ./my-project
+
+# Output formats
+what-is-my-tech-stack --format markdown
+what-is-my-tech-stack --format json
+what-is-my-tech-stack --format inline
+
+# Focus areas
+what-is-my-tech-stack --focus-area frontend
+what-is-my-tech-stack --focus-area backend
+
+# Technology focus
+what-is-my-tech-stack --tech-focus react
+what-is-my-tech-stack --tech-focus node
+```
+
+## Configuration
+
+Add your OpenAI API key to `.env`:
 ```env
 OPENAI_API_KEY=your_api_key_here
 ```
 
-## Example Output
+## Contributing
 
-```markdown
-# Project Tech Stack Analysis
-
-## Node.js Dependencies
-
-### Frameworks
-react, express
-Description: A modern web application stack using React for the frontend and Express.js for the backend API.
-
-### Testing Tools
-jest, cypress
-Description: Comprehensive testing setup with Jest for unit/integration tests and Cypress for end-to-end testing.
-
-### Build Tools & Bundlers
-webpack, babel
-Description: Industry-standard build tooling with Webpack for bundling and Babel for modern JavaScript transpilation.
-
-### Linting & Code Style
-eslint, prettier
-Description: Strict code quality enforcement with ESLint and consistent formatting with Prettier.
-
-### TypeScript
-typescript, @types/node
-Description: Full TypeScript integration for enhanced type safety and developer experience.
-
-### Utilities
-lodash, axios
-Description: Essential utility libraries for data manipulation and HTTP requests.
-
-## Python Dependencies
-
-### Web Frameworks
-django, flask
-Description: Robust web development capabilities with Django's full-featured framework and Flask's lightweight approach.
-
-### Testing Tools
-pytest, coverage
-Description: Modern Python testing infrastructure with pytest and code coverage reporting.
-
-### Database & ORM
-sqlalchemy, psycopg2
-Description: Flexible database integration with SQLAlchemy ORM and PostgreSQL support.
-
-### Data Science & ML
-numpy, pandas, scikit-learn
-Description: Comprehensive data science stack for numerical computing, data analysis, and machine learning.
-
-### Utilities
-requests, python-dotenv
-Description: Core Python utilities for HTTP operations and environment management.
-```
-
-## Development
-
-### Prerequisites
-
-- Node.js >= 18.0.0
-- pnpm
-
-### Setup
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/what-is-my-tech-stack.git
-   cd what-is-my-tech-stack
-   ```
-
-2. Install dependencies:
-   ```bash
-   pnpm install
-   ```
-
-3. Build the project:
-   ```bash
-   pnpm build
-   ```
-
-### Testing
-
-Run the test suite:
-
-```bash
-pnpm test
-```
-
-### Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md).
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
+MIT - feel free to use in your projects! 
