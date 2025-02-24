@@ -1,6 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 
+interface PackageJson {
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  [key: string]: unknown;
+}
+
 export class FileReader {
   /**
    * Checks if a file exists at the given path
@@ -16,15 +22,15 @@ export class FileReader {
   /**
    * Reads and parses a package.json file
    */
-  static readPackageJson(filePath: string): Record<string, any> {
+  static async readPackageJson(filePath: string): Promise<PackageJson> {
     try {
       const absolutePath = path.resolve(filePath);
       if (!this.fileExists(absolutePath)) {
         throw new Error(`package.json not found at ${absolutePath}`);
       }
 
-      const fileContent = fs.readFileSync(absolutePath, 'utf-8');
-      return JSON.parse(fileContent);
+      const fileContent = await fs.promises.readFile(absolutePath, 'utf-8');
+      return JSON.parse(fileContent) as PackageJson;
     } catch (error) {
       throw new Error(`Error reading package.json: ${(error as Error).message}`);
     }
@@ -33,14 +39,14 @@ export class FileReader {
   /**
    * Reads and parses a requirements.txt file
    */
-  static readRequirementsTxt(filePath: string): string[] {
+  static async readRequirementsTxt(filePath: string): Promise<string[]> {
     try {
       const absolutePath = path.resolve(filePath);
       if (!this.fileExists(absolutePath)) {
         throw new Error(`requirements.txt not found at ${absolutePath}`);
       }
 
-      const fileContent = fs.readFileSync(absolutePath, 'utf-8');
+      const fileContent = await fs.promises.readFile(absolutePath, 'utf-8');
       return fileContent
         .split('\n')
         .map((line) => line.trim())

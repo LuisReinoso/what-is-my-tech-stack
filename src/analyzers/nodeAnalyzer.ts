@@ -16,21 +16,28 @@ export class NodeAnalyzer {
   /**
    * Analyzes the package.json file and returns a list of dependencies
    */
-  analyze(): PackageDependency[] {
-    const packageJson = FileReader.readPackageJson(this.packageJsonPath);
-    const dependencies: PackageDependency[] = [];
+  async analyze(): Promise<PackageDependency[]> {
+    try {
+      const packageJson = await FileReader.readPackageJson(this.packageJsonPath);
+      const dependencies: PackageDependency[] = [];
 
-    // Process regular dependencies
-    if (packageJson.dependencies) {
-      dependencies.push(...this.processDependencies(packageJson.dependencies, 'dependency'));
+      // Process regular dependencies
+      if (packageJson.dependencies) {
+        dependencies.push(...this.processDependencies(packageJson.dependencies, 'dependency'));
+      }
+
+      // Process dev dependencies
+      if (packageJson.devDependencies) {
+        dependencies.push(
+          ...this.processDependencies(packageJson.devDependencies, 'devDependency')
+        );
+      }
+
+      return dependencies;
+    } catch (error) {
+      process.stderr.write(`Error analyzing package.json: ${(error as Error).message}\n`);
+      return [];
     }
-
-    // Process dev dependencies
-    if (packageJson.devDependencies) {
-      dependencies.push(...this.processDependencies(packageJson.devDependencies, 'devDependency'));
-    }
-
-    return dependencies;
   }
 
   /**

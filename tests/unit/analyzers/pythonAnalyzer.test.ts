@@ -17,7 +17,7 @@ describe('PythonAnalyzer', () => {
   });
 
   describe('analyze', () => {
-    it('should analyze requirements.txt with various version formats', () => {
+    it('should analyze requirements.txt with various version formats', async () => {
       const mockRequirements = [
         'django==3.2.0',
         'requests>=2.25.1',
@@ -29,10 +29,10 @@ describe('PythonAnalyzer', () => {
         'simple-package',
       ];
 
-      (FileReader.readRequirementsTxt as jest.Mock).mockReturnValue(mockRequirements);
+      (FileReader.readRequirementsTxt as jest.Mock).mockResolvedValue(mockRequirements);
 
       const analyzer = new PythonAnalyzer('requirements.txt');
-      const result = analyzer.analyze();
+      const result = await analyzer.analyze();
 
       expect(result).toEqual([
         { name: 'django', version: '3.2.0', constraint: '==' },
@@ -46,13 +46,13 @@ describe('PythonAnalyzer', () => {
       ]);
     });
 
-    it('should handle invalid requirement formats', () => {
+    it('should handle invalid requirement formats', async () => {
       const mockRequirements = ['invalid@package', 'package with spaces'];
 
-      (FileReader.readRequirementsTxt as jest.Mock).mockReturnValue(mockRequirements);
+      (FileReader.readRequirementsTxt as jest.Mock).mockResolvedValue(mockRequirements);
 
       const analyzer = new PythonAnalyzer('requirements.txt');
-      const result = analyzer.analyze();
+      const result = await analyzer.analyze();
 
       expect(result).toEqual([
         { name: 'invalid@package', version: '' },

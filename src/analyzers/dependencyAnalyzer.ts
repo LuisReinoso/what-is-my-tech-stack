@@ -1,7 +1,6 @@
 import { FileReader } from '../utils/fileReader.js';
 import { NodeAnalyzer } from './nodeAnalyzer.js';
 import { PythonAnalyzer } from './pythonAnalyzer.js';
-import { AIClient } from '../ai/openai.js';
 
 interface ProjectTechStack {
   type: 'node' | 'python' | 'both' | 'unknown';
@@ -41,7 +40,7 @@ export class DependencyAnalyzer {
 
     if (projectType === 'node' || projectType === 'both') {
       const nodeAnalyzer = new NodeAnalyzer(`${this.projectPath}/package.json`);
-      const nodeDependencies = nodeAnalyzer.analyze();
+      const nodeDependencies = await nodeAnalyzer.analyze();
       const nodeCategories = nodeAnalyzer.categorizeDependencies(nodeDependencies);
 
       // Get AI-generated description
@@ -51,9 +50,8 @@ export class DependencyAnalyzer {
         const techList = nodeDependencies.map((dep) => `• ${dep.name}`).join('\n');
         nodeDescription = techList;
       } catch (error) {
-        console.warn(
-          'Failed to generate Node.js tech stack description:',
-          (error as Error).message
+        process.stderr.write(
+          `Failed to generate Node.js tech stack description: ${(error as Error).message}\n`
         );
       }
 
@@ -66,7 +64,7 @@ export class DependencyAnalyzer {
 
     if (projectType === 'python' || projectType === 'both') {
       const pythonAnalyzer = new PythonAnalyzer(`${this.projectPath}/requirements.txt`);
-      const pythonDependencies = pythonAnalyzer.analyze();
+      const pythonDependencies = await pythonAnalyzer.analyze();
       const pythonCategories = pythonAnalyzer.categorizeDependencies(pythonDependencies);
 
       // Get AI-generated description
@@ -76,7 +74,9 @@ export class DependencyAnalyzer {
         const techList = pythonDependencies.map((dep) => `• ${dep.name}`).join('\n');
         pythonDescription = techList;
       } catch (error) {
-        console.warn('Failed to generate Python tech stack description:', (error as Error).message);
+        process.stderr.write(
+          `Failed to generate Python tech stack description: ${(error as Error).message}\n`
+        );
       }
 
       result.python = {

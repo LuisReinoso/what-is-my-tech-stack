@@ -16,9 +16,14 @@ export class PythonAnalyzer {
   /**
    * Analyzes the requirements.txt file and returns a list of dependencies
    */
-  analyze(): PythonDependency[] {
-    const requirements = FileReader.readRequirementsTxt(this.requirementsPath);
-    return requirements.map(this.parseDependency.bind(this));
+  async analyze(): Promise<PythonDependency[]> {
+    try {
+      const requirements = await FileReader.readRequirementsTxt(this.requirementsPath);
+      return requirements.map((line) => this.parseDependency(line));
+    } catch (error) {
+      process.stderr.write(`Error analyzing requirements.txt: ${(error as Error).message}\n`);
+      return [];
+    }
   }
 
   /**

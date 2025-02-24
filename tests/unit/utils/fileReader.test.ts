@@ -1,10 +1,18 @@
 import fs from 'fs';
 import path from 'path';
-import { FileReader } from '../../../src/utils/fileReader';
+import { FileReader } from '../../../src/utils/fileReader.js';
 
 // Mock fs and path modules
-jest.mock('fs');
-jest.mock('path');
+jest.mock('fs', () => ({
+  existsSync: jest.fn(),
+  promises: {
+    readFile: jest.fn(),
+  },
+}));
+jest.mock('path', () => ({
+  resolve: jest.fn(),
+  join: jest.fn(),
+}));
 
 describe('FileReader', () => {
   beforeEach(() => {
@@ -32,56 +40,62 @@ describe('FileReader', () => {
   });
 
   describe('readPackageJson', () => {
-    it('should read and parse package.json successfully', () => {
+    it('should read and parse package.json successfully', async () => {
       const mockPackageJson = { name: 'test', version: '1.0.0' };
       (path.resolve as jest.Mock).mockReturnValue('/absolute/path');
       (fs.existsSync as jest.Mock).mockReturnValue(true);
-      (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(mockPackageJson));
+      (fs.promises.readFile as jest.Mock).mockResolvedValue(JSON.stringify(mockPackageJson));
 
-      const result = FileReader.readPackageJson('package.json');
+      const result = await FileReader.readPackageJson('package.json');
       expect(result).toEqual(mockPackageJson);
     });
 
-    it('should throw error when package.json does not exist', () => {
+    it('should throw error when package.json does not exist', async () => {
       (path.resolve as jest.Mock).mockReturnValue('/absolute/path');
       (fs.existsSync as jest.Mock).mockReturnValue(false);
 
-      expect(() => FileReader.readPackageJson('package.json')).toThrow('package.json not found');
+      await expect(FileReader.readPackageJson('package.json')).rejects.toThrow(
+        'package.json not found'
+      );
     });
 
-    it('should throw error when package.json is invalid JSON', () => {
+    it('should throw error when package.json is invalid JSON', async () => {
       (path.resolve as jest.Mock).mockReturnValue('/absolute/path');
       (fs.existsSync as jest.Mock).mockReturnValue(true);
-      (fs.readFileSync as jest.Mock).mockReturnValue('invalid json');
+      (fs.promises.readFile as jest.Mock).mockResolvedValue('invalid json');
 
-      expect(() => FileReader.readPackageJson('package.json')).toThrow(
+      await expect(FileReader.readPackageJson('package.json')).rejects.toThrow(
         'Error reading package.json'
       );
     });
   });
 
   describe('readRequirementsTxt', () => {
-    it('should read and parse requirements.txt successfully', () => {
+    it('should read and parse requirements.txt successfully', async () => {
       const mockContent = 'package1==1.0.0\n# comment\npackage2>=2.0.0\n\npackage3';
       (path.resolve as jest.Mock).mockReturnValue('/absolute/path');
       (fs.existsSync as jest.Mock).mockReturnValue(true);
-      (fs.readFileSync as jest.Mock).mockReturnValue(mockContent);
+      (fs.promises.readFile as jest.Mock).mockResolvedValue(mockContent);
 
-      const result = FileReader.readRequirementsTxt('requirements.txt');
+      const result = await FileReader.readRequirementsTxt('requirements.txt');
       expect(result).toEqual(['package1==1.0.0', 'package2>=2.0.0', 'package3']);
     });
 
-    it('should throw error when requirements.txt does not exist', () => {
+    it('should throw error when requirements.txt does not exist', async () => {
       (path.resolve as jest.Mock).mockReturnValue('/absolute/path');
       (fs.existsSync as jest.Mock).mockReturnValue(false);
 
-      expect(() => FileReader.readRequirementsTxt('requirements.txt')).toThrow(
+      await expect(FileReader.readRequirementsTxt('requirements.txt')).rejects.toThrow(
         'requirements.txt not found'
       );
     });
   });
 
   describe('detectProjectType', () => {
+    beforeEach(() => {
+      (path.join as jest.Mock).mockImplementation((...args) => args.join('/'));
+    });
+
     it('should detect node project', () => {
       (fs.existsSync as jest.Mock)
         .mockReturnValueOnce(true) // package.json exists

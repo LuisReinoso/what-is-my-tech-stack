@@ -2,7 +2,6 @@ import { DependencyAnalyzer } from '../../../src/analyzers/dependencyAnalyzer.js
 import { FileReader } from '../../../src/utils/fileReader.js';
 import { NodeAnalyzer } from '../../../src/analyzers/nodeAnalyzer.js';
 import { PythonAnalyzer } from '../../../src/analyzers/pythonAnalyzer.js';
-import { AIClient } from '../../../src/ai/openai.js';
 
 // Mock all dependencies
 jest.mock('../../../src/utils/fileReader.js');

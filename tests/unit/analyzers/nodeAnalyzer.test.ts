@@ -17,7 +17,7 @@ describe('NodeAnalyzer', () => {
   });
 
   describe('analyze', () => {
-    it('should analyze package.json with both dependencies and devDependencies', () => {
+    it('should analyze package.json with both dependencies and devDependencies', async () => {
       const mockPackageJson = {
         dependencies: {
           react: '^17.0.0',
@@ -29,10 +29,10 @@ describe('NodeAnalyzer', () => {
         },
       };
 
-      (FileReader.readPackageJson as jest.Mock).mockReturnValue(mockPackageJson);
+      (FileReader.readPackageJson as jest.Mock).mockResolvedValue(mockPackageJson);
 
       const analyzer = new NodeAnalyzer('package.json');
-      const result = analyzer.analyze();
+      const result = await analyzer.analyze();
 
       expect(result).toEqual([
         { name: 'react', version: '17.0.0', type: 'dependency' },
@@ -42,32 +42,32 @@ describe('NodeAnalyzer', () => {
       ]);
     });
 
-    it('should handle package.json with only dependencies', () => {
+    it('should handle package.json with only dependencies', async () => {
       const mockPackageJson = {
         dependencies: {
           react: '^17.0.0',
         },
       };
 
-      (FileReader.readPackageJson as jest.Mock).mockReturnValue(mockPackageJson);
+      (FileReader.readPackageJson as jest.Mock).mockResolvedValue(mockPackageJson);
 
       const analyzer = new NodeAnalyzer('package.json');
-      const result = analyzer.analyze();
+      const result = await analyzer.analyze();
 
       expect(result).toEqual([{ name: 'react', version: '17.0.0', type: 'dependency' }]);
     });
 
-    it('should handle package.json with only devDependencies', () => {
+    it('should handle package.json with only devDependencies', async () => {
       const mockPackageJson = {
         devDependencies: {
           jest: '^27.0.0',
         },
       };
 
-      (FileReader.readPackageJson as jest.Mock).mockReturnValue(mockPackageJson);
+      (FileReader.readPackageJson as jest.Mock).mockResolvedValue(mockPackageJson);
 
       const analyzer = new NodeAnalyzer('package.json');
-      const result = analyzer.analyze();
+      const result = await analyzer.analyze();
 
       expect(result).toEqual([{ name: 'jest', version: '27.0.0', type: 'devDependency' }]);
     });
@@ -116,7 +116,7 @@ describe('NodeAnalyzer', () => {
   });
 
   describe('version normalization', () => {
-    it('should normalize different version formats', () => {
+    it('should normalize different version formats', async () => {
       const mockPackageJson = {
         dependencies: {
           pkg1: '^1.0.0',
@@ -126,10 +126,10 @@ describe('NodeAnalyzer', () => {
         },
       };
 
-      (FileReader.readPackageJson as jest.Mock).mockReturnValue(mockPackageJson);
+      (FileReader.readPackageJson as jest.Mock).mockResolvedValue(mockPackageJson);
 
       const analyzer = new NodeAnalyzer('package.json');
-      const result = analyzer.analyze();
+      const result = await analyzer.analyze();
 
       expect(result).toEqual([
         { name: 'pkg1', version: '1.0.0', type: 'dependency' },

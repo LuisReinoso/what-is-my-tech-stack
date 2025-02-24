@@ -22,53 +22,102 @@ type FormatterOptions = {
   }>;
 };
 
-const FRONTEND_TECHS = [
-  'react',
-  'angular',
-  'vue',
-  'svelte',
-  'next',
-  'nuxt',
-  '@angular',
-  '@material-ui',
-  '@mui',
-  'tailwind',
-  'bootstrap',
-  'sass',
-  'less',
-  'styled-components',
-  'emotion',
-  'webpack',
-  'vite',
-  'parcel',
-  'babel',
-  'typescript',
-  'javascript',
-];
+type TechCategory = 'frontend' | 'backend' | 'fullstack' | 'devops' | 'testing' | 'database';
 
-const BACKEND_TECHS = [
-  'express',
-  'nest',
-  'fastify',
-  'koa',
-  'hapi',
-  'django',
-  'flask',
-  'fastapi',
-  'spring',
-  'node',
-  'python',
-  'java',
-  'go',
-  'rust',
-  'postgresql',
-  'mysql',
-  'mongodb',
-  'redis',
-  'prisma',
-  'typeorm',
-  'sequelize',
-];
+const TECH_CATEGORIES: Record<TechCategory, string[]> = {
+  frontend: [
+    'react',
+    'angular',
+    'vue',
+    'svelte',
+    'next',
+    'nuxt',
+    '@angular',
+    '@material-ui',
+    '@mui',
+    'tailwind',
+    'bootstrap',
+    'sass',
+    'less',
+    'styled-components',
+    'emotion',
+    'webpack',
+    'vite',
+    'parcel',
+    'babel',
+    'typescript',
+    'javascript',
+  ],
+  backend: [
+    'express',
+    'nest',
+    'fastify',
+    'koa',
+    'hapi',
+    'django',
+    'flask',
+    'fastapi',
+    'spring',
+    'node',
+    'python',
+    'java',
+    'go',
+    'rust',
+    'postgresql',
+    'mysql',
+    'mongodb',
+    'redis',
+    'prisma',
+    'typeorm',
+    'sequelize',
+  ],
+  fullstack: [], // Will be populated with both frontend and backend
+  devops: [
+    'docker',
+    'kubernetes',
+    'terraform',
+    'aws-sdk',
+    'azure-sdk',
+    'google-cloud',
+    'jenkins',
+    'gitlab',
+    'github-actions',
+    'circleci',
+    'prometheus',
+    'grafana',
+  ],
+  testing: [
+    'jest',
+    'mocha',
+    'chai',
+    'cypress',
+    'selenium',
+    'playwright',
+    'puppeteer',
+    '@testing-library',
+    'enzyme',
+    'karma',
+    'jasmine',
+    'pytest',
+    'unittest',
+  ],
+  database: [
+    'postgresql',
+    'mysql',
+    'mongodb',
+    'redis',
+    'prisma',
+    'typeorm',
+    'sequelize',
+    'mongoose',
+    'sqlalchemy',
+    'knex',
+    'sqlite',
+  ],
+};
+
+// Populate fullstack category
+TECH_CATEGORIES.fullstack = [...TECH_CATEGORIES.frontend, ...TECH_CATEGORIES.backend];
 
 const TECH_FOCUS_MAP: Record<string, string[]> = {
   angular: [
@@ -149,48 +198,6 @@ const TECH_FOCUS_MAP: Record<string, string[]> = {
     'tensorflow',
     'pytorch',
   ],
-  devops: [
-    'docker',
-    'kubernetes',
-    'terraform',
-    'aws-sdk',
-    'azure-sdk',
-    'google-cloud',
-    'jenkins',
-    'gitlab',
-    'github-actions',
-    'circleci',
-    'prometheus',
-    'grafana',
-  ],
-  testing: [
-    'jest',
-    'mocha',
-    'chai',
-    'cypress',
-    'selenium',
-    'playwright',
-    'puppeteer',
-    '@testing-library',
-    'enzyme',
-    'karma',
-    'jasmine',
-    'pytest',
-    'unittest',
-  ],
-  database: [
-    'postgresql',
-    'mysql',
-    'mongodb',
-    'redis',
-    'prisma',
-    'typeorm',
-    'sequelize',
-    'mongoose',
-    'sqlalchemy',
-    'knex',
-    'sqlite',
-  ],
 };
 
 export class OutputFormatter {
@@ -225,53 +232,52 @@ export class OutputFormatter {
     let filteredTechs = allTechs;
     try {
       if (focusArea) {
+        // Use AI for filtering
         const prompt = formatPrompt(FOCUS_AREA_PROMPT, {
           dependencies: JSON.stringify(allTechs),
           focusArea: focusArea,
         });
         const result = await AIClient.filterTechnologies(prompt);
-        filteredTechs = result;
-      }
+        if (result && result.length > 0) {
+          filteredTechs = result;
+        }
+      } else if (techFocus) {
+        // Use TECH_FOCUS_MAP to pre-filter before AI
+        const techFocusLower = techFocus.toLowerCase();
+        if (TECH_FOCUS_MAP[techFocusLower]) {
+          filteredTechs = filteredTechs.filter((tech) =>
+            TECH_FOCUS_MAP[techFocusLower].some((t) => tech.toLowerCase().includes(t.toLowerCase()))
+          );
+        }
 
-      if (techFocus) {
+        // Use AI for additional filtering
         const prompt = formatPrompt(TECH_FOCUS_PROMPT, {
           dependencies: JSON.stringify(filteredTechs),
           techFocus: techFocus,
         });
         const result = await AIClient.filterTechnologies(prompt);
-        filteredTechs = result;
+        if (result && result.length > 0) {
+          filteredTechs = result;
+        }
       }
     } catch (error) {
       console.warn('Failed to filter technologies:', (error as Error).message);
+      filteredTechs = allTechs; // Preserve all technologies when AI filtering fails
     }
 
     // Format the filtered technologies
     const formattedTechs = filteredTechs.map((techName) => {
-      const tech =
-        content
-          .split('\n')
-          .find((line) => line.trim().slice(1).trim().startsWith(techName))
-          ?.slice(1)
-          .trim() || techName;
-
-      if (showVersions) {
-        const dep = dependencies.find((d) => d.name === techName);
-        if (dep) {
-          const majorVersion = dep.version.split('.')[0];
-          return `${formatConfig.list}${tech} (v${majorVersion})`.trim();
-        }
+      const tech = dependencies.find((d) => d.name === techName);
+      if (tech && showVersions) {
+        const majorVersion = tech.version.split('.')[0];
+        return format === 'inline'
+          ? `${tech.name} (v${majorVersion})`
+          : `${formatConfig.list}${tech.name} (v${majorVersion})`;
       }
-
-      return `${formatConfig.list}${tech}`.trim();
+      return format === 'inline' ? techName : `${formatConfig.list}${techName}`;
     });
 
-    // For inline format, join with separator
-    if (format === 'inline' && formatConfig.separator) {
-      return formattedTechs.join(formatConfig.separator).trim();
-    }
-
-    // For other formats, join with newlines
-    return formattedTechs.join('\n').trim();
+    return format === 'inline' ? formattedTechs.join(', ') : formattedTechs.join('\n');
   }
 
   /**

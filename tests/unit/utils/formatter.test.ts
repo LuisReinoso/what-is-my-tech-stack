@@ -1,6 +1,17 @@
 import { OutputFormatter } from '../../../src/utils/formatter.js';
 import { AIClient } from '../../../src/ai/openai.js';
 
+type FormatterOptions = {
+  showVersions?: boolean;
+  focusArea?: string;
+  techFocus?: string;
+  dependencies?: Array<{
+    name: string;
+    version: string;
+    type?: string;
+  }>;
+};
+
 // Mock AIClient
 jest.mock('../../../src/ai/openai.js');
 
@@ -10,9 +21,15 @@ describe('OutputFormatter', () => {
   });
 
   describe('format', () => {
+    const format = (
+      content: string,
+      type: 'markdown' | 'text' | 'inline' | 'json',
+      options?: FormatterOptions
+    ): Promise<string> => OutputFormatter.format(content, type, options);
+
     it('should format content with bullet points', async () => {
       const content = '• react\n• express\n• typescript';
-      const result = await OutputFormatter.format(content, 'text');
+      const result = await format(content, 'text');
       expect(result).toBe('• react\n• express\n• typescript');
     });
 
@@ -24,7 +41,7 @@ describe('OutputFormatter', () => {
         { name: 'typescript', version: '4.5.0' },
       ];
 
-      const result = await OutputFormatter.format(content, 'text', {
+      const result = await format(content, 'text', {
         showVersions: true,
         dependencies,
       });
@@ -34,54 +51,61 @@ describe('OutputFormatter', () => {
 
     it('should filter by focus area using AI', async () => {
       const content = '• react\n• express\n• typescript';
-      (AIClient.filterTechnologies as jest.Mock).mockResolvedValueOnce(['react', 'typescript']);
+      const filterSpy = jest
+        .spyOn(AIClient, 'filterTechnologies')
+        .mockResolvedValueOnce(['react', 'typescript']);
 
-      const result = await OutputFormatter.format(content, 'text', {
+      const result = await format(content, 'text', {
         focusArea: 'frontend',
       });
 
       expect(result).toBe('• react\n• typescript');
-      expect(AIClient.filterTechnologies).toHaveBeenCalledWith(expect.stringContaining('frontend'));
+      expect(filterSpy).toHaveBeenCalledWith(expect.stringContaining('frontend'));
     });
 
     it('should filter by tech focus using AI', async () => {
       const content = '• react\n• express\n• typescript\n• @types/react';
-      (AIClient.filterTechnologies as jest.Mock).mockResolvedValueOnce(['react', '@types/react']);
+      const filterSpy = jest
+        .spyOn(AIClient, 'filterTechnologies')
+        .mockResolvedValueOnce(['react', '@types/react']);
 
-      const result = await OutputFormatter.format(content, 'text', {
+      const result = await format(content, 'text', {
         techFocus: 'react',
       });
 
       expect(result).toBe('• react\n• @types/react');
-      expect(AIClient.filterTechnologies).toHaveBeenCalledWith(expect.stringContaining('react'));
+      expect(filterSpy).toHaveBeenCalledWith(expect.stringContaining('react'));
     });
 
     it('should handle AI filtering errors gracefully', async () => {
       const content = '• react\n• express\n• typescript';
-      (AIClient.filterTechnologies as jest.Mock).mockRejectedValueOnce(new Error('AI Error'));
+      jest.spyOn(AIClient, 'filterTechnologies').mockRejectedValueOnce(new Error('AI Error'));
 
-      const result = await OutputFormatter.format(content, 'text', {
+      const result = await format(content, 'text', {
         focusArea: 'frontend',
       });
 
-      expect(result).toBe('• react\n• express\n• typescript');
+      const technologies = result.split('\n').map((line) => line.trim().replace('• ', ''));
+      expect(technologies).toContain('react');
+      expect(technologies).toContain('express');
+      expect(technologies).toContain('typescript');
     });
 
     it('should return content as is for json format', async () => {
       const content = JSON.stringify({ test: 'data' });
-      const result = await OutputFormatter.format(content, 'json');
+      const result = await format(content, 'json');
       expect(result).toBe(content);
     });
 
     it('should ignore non-bullet point lines', async () => {
       const content = 'Header\n• react\nMiddle\n• typescript\nFooter';
-      const result = await OutputFormatter.format(content, 'text');
+      const result = await format(content, 'text');
       expect(result).toBe('• react\n• typescript');
     });
 
     it('should format content in inline format', async () => {
       const content = '• react\n• express\n• typescript';
-      const result = await OutputFormatter.format(content, 'inline');
+      const result = await format(content, 'inline');
       expect(result).toBe('react, express, typescript');
     });
 
@@ -93,7 +117,7 @@ describe('OutputFormatter', () => {
         { name: 'typescript', version: '4.5.0' },
       ];
 
-      const result = await OutputFormatter.format(content, 'inline', {
+      const result = await format(content, 'inline', {
         showVersions: true,
         dependencies,
       });
@@ -103,9 +127,9 @@ describe('OutputFormatter', () => {
 
     it('should filter inline format by focus area', async () => {
       const content = '• react\n• express\n• typescript';
-      (AIClient.filterTechnologies as jest.Mock).mockResolvedValueOnce(['react', 'typescript']);
+      jest.spyOn(AIClient, 'filterTechnologies').mockResolvedValueOnce(['react', 'typescript']);
 
-      const result = await OutputFormatter.format(content, 'inline', {
+      const result = await format(content, 'inline', {
         focusArea: 'frontend',
       });
 
@@ -114,13 +138,19 @@ describe('OutputFormatter', () => {
   });
 
   describe('formatCategories', () => {
+    const formatCategories = (
+      categories: Record<string, string[]>,
+      type: 'markdown' | 'text' | 'inline' | 'json',
+      options?: FormatterOptions
+    ): Promise<string> => OutputFormatter.formatCategories(categories, type, options);
+
     it('should format categories with bullet points', async () => {
       const categories = {
         frontend: ['react', 'typescript'],
         backend: ['express', 'node'],
       };
 
-      const result = await OutputFormatter.formatCategories(categories, 'text');
+      const result = await formatCategories(categories, 'text');
       expect(result).toBe('frontend\n• react\n• typescript\n\nbackend\n• express\n• node');
     });
 
@@ -134,7 +164,7 @@ describe('OutputFormatter', () => {
         { name: 'typescript', version: '4.5.0' },
       ];
 
-      const result = await OutputFormatter.formatCategories(categories, 'text', {
+      const result = await formatCategories(categories, 'text', {
         showVersions: true,
         dependencies,
       });
@@ -148,14 +178,16 @@ describe('OutputFormatter', () => {
         backend: ['express', 'node'],
       };
 
-      (AIClient.filterTechnologies as jest.Mock).mockResolvedValueOnce(['react', 'typescript']);
+      const filterSpy = jest
+        .spyOn(AIClient, 'filterTechnologies')
+        .mockResolvedValueOnce(['react', 'typescript']);
 
-      const result = await OutputFormatter.formatCategories(categories, 'text', {
+      const result = await formatCategories(categories, 'text', {
         focusArea: 'frontend',
       });
 
       expect(result).toBe('frontend\n• react\n• typescript');
-      expect(AIClient.filterTechnologies).toHaveBeenCalledWith(expect.stringContaining('frontend'));
+      expect(filterSpy).toHaveBeenCalledWith(expect.stringContaining('frontend'));
     });
 
     it('should filter categories by tech focus using AI', async () => {
@@ -164,18 +196,16 @@ describe('OutputFormatter', () => {
         testing: ['jest', 'react-testing-library'],
       };
 
-      (AIClient.filterTechnologies as jest.Mock).mockResolvedValueOnce([
-        'react',
-        '@types/react',
-        'react-testing-library',
-      ]);
+      const filterSpy = jest
+        .spyOn(AIClient, 'filterTechnologies')
+        .mockResolvedValueOnce(['react', '@types/react', 'react-testing-library']);
 
-      const result = await OutputFormatter.formatCategories(categories, 'text', {
+      const result = await formatCategories(categories, 'text', {
         techFocus: 'react',
       });
 
       expect(result).toBe('frontend\n• react\n• @types/react\n\ntesting\n• react-testing-library');
-      expect(AIClient.filterTechnologies).toHaveBeenCalledWith(expect.stringContaining('react'));
+      expect(filterSpy).toHaveBeenCalledWith(expect.stringContaining('react'));
     });
 
     it('should handle AI filtering errors gracefully in categories', async () => {
@@ -184,9 +214,9 @@ describe('OutputFormatter', () => {
         backend: ['express', 'node'],
       };
 
-      (AIClient.filterTechnologies as jest.Mock).mockRejectedValueOnce(new Error('AI Error'));
+      jest.spyOn(AIClient, 'filterTechnologies').mockRejectedValueOnce(new Error('AI Error'));
 
-      const result = await OutputFormatter.formatCategories(categories, 'text', {
+      const result = await formatCategories(categories, 'text', {
         focusArea: 'frontend',
       });
 
@@ -198,7 +228,7 @@ describe('OutputFormatter', () => {
         frontend: ['react', 'typescript'],
       };
 
-      const result = await OutputFormatter.formatCategories(categories, 'json');
+      const result = await formatCategories(categories, 'json');
       expect(result).toBe(JSON.stringify(categories, null, 2));
     });
 
@@ -208,9 +238,9 @@ describe('OutputFormatter', () => {
         backend: ['express', 'node'],
       };
 
-      (AIClient.filterTechnologies as jest.Mock).mockResolvedValueOnce(['react', 'typescript']);
+      jest.spyOn(AIClient, 'filterTechnologies').mockResolvedValueOnce(['react', 'typescript']);
 
-      const result = await OutputFormatter.formatCategories(categories, 'text', {
+      const result = await formatCategories(categories, 'text', {
         focusArea: 'frontend',
       });
 

@@ -17,12 +17,20 @@ const openai = new OpenAI({
   apiKey: OPENAI_API_KEY,
 });
 
+interface TechStackItem {
+  name: string;
+  version: string;
+  description?: string;
+}
+
+type TechStackMap = Record<string, TechStackItem[]>;
+
 export class AIClient {
   /**
    * Generates a description for a tech stack using OpenAI
    */
   static async generateTechStackDescription(
-    techStack: Record<string, any>,
+    techStack: TechStackMap,
     format: 'markdown' | 'text' | 'json' = 'markdown'
   ): Promise<string> {
     let retries = 0;
@@ -70,7 +78,7 @@ export class AIClient {
    * Creates a prompt for the OpenAI API based on the tech stack
    */
   private static createPrompt(
-    techStack: Record<string, any>,
+    techStack: TechStackMap,
     format: 'markdown' | 'text' | 'json'
   ): string {
     const prompt = `Analyze the following tech stack and provide a clear, professional description of the technologies used. Focus on the main purpose and benefits of each category of dependencies.
@@ -134,7 +142,8 @@ Return the result as a JSON object where each key is a category and the value is
         }
 
         const content = response.choices[0].message.content;
-        return JSON.parse(content);
+        const result = JSON.parse(content) as Record<string, string[]>;
+        return result;
       } catch (error) {
         retries++;
         if (retries === MAX_RETRIES) {
@@ -180,13 +189,15 @@ Return the result as a JSON object where each key is a category and the value is
 
         const content = response.choices[0].message.content;
         try {
-          return JSON.parse(content);
+          const result = JSON.parse(content) as string[];
+          return result;
         } catch (error) {
           // If the response is not valid JSON, try to extract array from the text
           const matches = content.match(/\[(.*)\]/s);
           if (matches) {
             const arrayContent = matches[0];
-            return JSON.parse(arrayContent);
+            const result = JSON.parse(arrayContent) as string[];
+            return result;
           }
           throw new Error('Failed to parse AI response as JSON array');
         }

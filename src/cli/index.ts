@@ -7,6 +7,14 @@ import chalk from 'chalk';
 import path from 'path';
 import ora from 'ora';
 
+interface CliOptions {
+  path: string;
+  format: 'text' | 'markdown' | 'json';
+  showVersions: boolean;
+  focusArea?: string;
+  techFocus?: string;
+}
+
 const program = new Command();
 
 program
@@ -18,7 +26,7 @@ program
   .option('-v, --show-versions', 'Show major version numbers')
   .option('-a, --focus-area <area>', 'Focus on specific area (frontend, backend, fullstack)')
   .option('-t, --tech-focus <tech>', 'Focus on specific technology (e.g., angular, react, node)')
-  .action(async (options) => {
+  .action(async (options: CliOptions) => {
     try {
       const projectPath = path.resolve(options.path);
       const spinner = ora({
@@ -43,7 +51,7 @@ program
             techFocus: options.techFocus,
             dependencies: techStack.node.dependencies,
           });
-          console.log(formattedDescription);
+          process.stdout.write(formattedDescription + '\n');
         }
         if (categories) {
           const formattedCategories = await OutputFormatter.formatCategories(
@@ -56,12 +64,12 @@ program
               dependencies: techStack.node.dependencies,
             }
           );
-          console.log('\n' + formattedCategories);
+          process.stdout.write('\n' + formattedCategories + '\n');
         }
       }
 
       if (techStack.python) {
-        if (techStack.node) console.log('\n'); // Add spacing if we had Node.js output
+        if (techStack.node) process.stdout.write('\n'); // Add spacing if we had Node.js output
 
         const description = techStack.python.description;
         const categories = techStack.python.categories;
@@ -73,7 +81,7 @@ program
             techFocus: options.techFocus,
             dependencies: techStack.python.dependencies,
           });
-          console.log(formattedDescription);
+          process.stdout.write(formattedDescription + '\n');
         }
         if (categories) {
           const formattedCategories = await OutputFormatter.formatCategories(
@@ -86,15 +94,17 @@ program
               dependencies: techStack.python.dependencies,
             }
           );
-          console.log('\n' + formattedCategories);
+          process.stdout.write('\n' + formattedCategories + '\n');
         }
       }
 
       if (techStack.type === 'unknown') {
-        console.log('No recognized dependency files found (package.json or requirements.txt).');
+        process.stderr.write(
+          'No recognized dependency files found (package.json or requirements.txt).\n'
+        );
       }
     } catch (error) {
-      console.error(chalk.red(`Error: ${(error as Error).message}`));
+      process.stderr.write(chalk.red(`Error: ${(error as Error).message}\n`));
       process.exit(1);
     }
   });
