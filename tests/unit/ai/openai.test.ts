@@ -7,12 +7,20 @@ jest.mock('dotenv', () => ({
   config: jest.fn(),
 }));
 
-const MockOpenAI = OpenAI as jest.MockedClass<typeof OpenAI>;
-
 describe('AIClient', () => {
+  let mockCreate: jest.Mock;
+
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.OPENAI_API_KEY = 'test-key';
+
+    // Setup mock for OpenAI chat completions
+    mockCreate = jest.fn();
+    (OpenAI as jest.MockedClass<typeof OpenAI>).prototype.chat = {
+      completions: {
+        create: mockCreate,
+      },
+    } as any;
   });
 
   describe('generateTechStackDescription', () => {
@@ -27,16 +35,7 @@ describe('AIClient', () => {
         ],
       };
 
-      MockOpenAI.mockImplementation(
-        () =>
-          ({
-            chat: {
-              completions: {
-                create: jest.fn().mockResolvedValue(mockResponse),
-              },
-            },
-          }) as unknown as OpenAI
-      );
+      mockCreate.mockResolvedValueOnce(mockResponse);
 
       const techStack = {
         node: {
@@ -49,6 +48,7 @@ describe('AIClient', () => {
 
       const result = await AIClient.generateTechStackDescription(techStack);
       expect(result).toBe('Generated tech stack description');
+      expect(mockCreate).toHaveBeenCalledTimes(1);
     });
 
     it('should retry on failure and succeed', async () => {
@@ -62,21 +62,7 @@ describe('AIClient', () => {
         ],
       };
 
-      const mockCreate = jest
-        .fn()
-        .mockRejectedValueOnce(new Error('API Error'))
-        .mockResolvedValueOnce(mockResponse);
-
-      MockOpenAI.mockImplementation(
-        () =>
-          ({
-            chat: {
-              completions: {
-                create: mockCreate,
-              },
-            },
-          }) as unknown as OpenAI
-      );
+      mockCreate.mockRejectedValueOnce(new Error('API Error')).mockResolvedValueOnce(mockResponse);
 
       const techStack = {
         node: {
@@ -90,18 +76,7 @@ describe('AIClient', () => {
     });
 
     it('should throw error after max retries', async () => {
-      const mockCreate = jest.fn().mockRejectedValue(new Error('API Error'));
-
-      MockOpenAI.mockImplementation(
-        () =>
-          ({
-            chat: {
-              completions: {
-                create: mockCreate,
-              },
-            },
-          }) as unknown as OpenAI
-      );
+      mockCreate.mockRejectedValue(new Error('API Error'));
 
       const techStack = {
         node: {
@@ -131,16 +106,7 @@ describe('AIClient', () => {
         ],
       };
 
-      MockOpenAI.mockImplementation(
-        () =>
-          ({
-            chat: {
-              completions: {
-                create: jest.fn().mockResolvedValue(mockResponse),
-              },
-            },
-          }) as unknown as OpenAI
-      );
+      mockCreate.mockResolvedValueOnce(mockResponse);
 
       const dependencies = [
         { name: 'react', version: '17.0.0' },
@@ -152,6 +118,7 @@ describe('AIClient', () => {
         framework: ['react'],
         testing: ['jest'],
       });
+      expect(mockCreate).toHaveBeenCalledTimes(1);
     });
 
     it('should retry on failure and succeed', async () => {
@@ -167,21 +134,7 @@ describe('AIClient', () => {
         ],
       };
 
-      const mockCreate = jest
-        .fn()
-        .mockRejectedValueOnce(new Error('API Error'))
-        .mockResolvedValueOnce(mockResponse);
-
-      MockOpenAI.mockImplementation(
-        () =>
-          ({
-            chat: {
-              completions: {
-                create: mockCreate,
-              },
-            },
-          }) as unknown as OpenAI
-      );
+      mockCreate.mockRejectedValueOnce(new Error('API Error')).mockResolvedValueOnce(mockResponse);
 
       const dependencies = [{ name: 'react', version: '17.0.0' }];
 
@@ -193,18 +146,7 @@ describe('AIClient', () => {
     });
 
     it('should throw error after max retries', async () => {
-      const mockCreate = jest.fn().mockRejectedValue(new Error('API Error'));
-
-      MockOpenAI.mockImplementation(
-        () =>
-          ({
-            chat: {
-              completions: {
-                create: mockCreate,
-              },
-            },
-          }) as unknown as OpenAI
-      );
+      mockCreate.mockRejectedValue(new Error('API Error'));
 
       const dependencies = [{ name: 'react', version: '17.0.0' }];
 

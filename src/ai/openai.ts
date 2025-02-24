@@ -45,7 +45,11 @@ export class AIClient {
           max_tokens: 1000,
         });
 
-        return response.choices[0].message.content || '';
+        if (!response.choices[0]?.message?.content) {
+          throw new Error('No content in OpenAI response');
+        }
+
+        return response.choices[0].message.content;
       } catch (error) {
         retries++;
         if (retries === MAX_RETRIES) {
@@ -107,7 +111,7 @@ Group them into categories like:
 Return the result as a JSON object where each key is a category and the value is an array of dependency names.`;
 
         const response = await openai.chat.completions.create({
-          model: 'gpt-3.5-turbo',
+          model: 'gpt-4o-mini',
           messages: [
             {
               role: 'system',
@@ -124,7 +128,11 @@ Return the result as a JSON object where each key is a category and the value is
           response_format: { type: 'json_object' },
         });
 
-        const content = response.choices[0].message.content || '{}';
+        if (!response.choices[0]?.message?.content) {
+          throw new Error('No content in OpenAI response');
+        }
+
+        const content = response.choices[0].message.content;
         return JSON.parse(content);
       } catch (error) {
         retries++;

@@ -11,7 +11,7 @@ Keep the descriptions concise but informative, suitable for a CV or project docu
 export const NODE_ANALYSIS_PROMPT = `Analyze the following Node.js project dependencies and provide insights about:
 1. The main frameworks and libraries used
 2. The development and build tooling
-3. Testing and quality assurance setup
+3. Testing and quality assurance tools with testing frameworks
 4. Any notable patterns or architectural choices suggested by the dependencies
 
 Dependencies:
@@ -24,7 +24,7 @@ Please provide a professional summary that would be suitable for a project descr
  */
 export const PYTHON_ANALYSIS_PROMPT = `Analyze the following Python project dependencies and provide insights about:
 1. The main frameworks and libraries used
-2. Data processing and scientific computing capabilities
+2. Data processing and data processing capabilities
 3. Testing and development tools
 4. Any notable patterns or architectural choices suggested by the dependencies
 
@@ -84,7 +84,7 @@ export const OUTPUT_FORMATS = {
  */
 export function formatPrompt(template: string, variables: Record<string, string>): string {
   return Object.entries(variables).reduce(
-    (prompt, [key, value]) => prompt.replace(`{{${key}}}`, value),
+    (prompt, [key, value]) => prompt.replaceAll(`{{${key}}}`, value),
     template
   );
 }
