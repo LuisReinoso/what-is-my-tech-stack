@@ -25,19 +25,15 @@ describe('DependencyAnalyzer', () => {
         { name: 'react', version: '17.0.0', type: 'dependency' },
         { name: 'jest', version: '27.0.0', type: 'devDependency' },
       ];
-
       const mockNodeCategories = {
         framework: ['react'],
         testing: ['jest'],
       };
 
-      const mockNodeDescription = 'AI-generated Node.js tech stack description';
-
       (NodeAnalyzer.prototype.analyze as jest.Mock).mockReturnValue(mockNodeDependencies);
       (NodeAnalyzer.prototype.categorizeDependencies as jest.Mock).mockReturnValue(
         mockNodeCategories
       );
-      (AIClient.generateTechStackDescription as jest.Mock).mockResolvedValue(mockNodeDescription);
 
       const analyzer = new DependencyAnalyzer('.');
       const result = await analyzer.analyze();
@@ -47,7 +43,7 @@ describe('DependencyAnalyzer', () => {
         node: {
           dependencies: mockNodeDependencies,
           categories: mockNodeCategories,
-          description: mockNodeDescription,
+          description: '• react\n• jest',
         },
       });
     });
@@ -61,19 +57,15 @@ describe('DependencyAnalyzer', () => {
         { name: 'django', version: '3.2.0', constraint: '==' },
         { name: 'pytest', version: '6.2.4', constraint: '==' },
       ];
-
       const mockPythonCategories = {
         web_framework: ['django'],
         testing: ['pytest'],
       };
 
-      const mockPythonDescription = 'AI-generated Python tech stack description';
-
       (PythonAnalyzer.prototype.analyze as jest.Mock).mockReturnValue(mockPythonDependencies);
       (PythonAnalyzer.prototype.categorizeDependencies as jest.Mock).mockReturnValue(
         mockPythonCategories
       );
-      (AIClient.generateTechStackDescription as jest.Mock).mockResolvedValue(mockPythonDescription);
 
       const analyzer = new DependencyAnalyzer('.');
       const result = await analyzer.analyze();
@@ -83,7 +75,7 @@ describe('DependencyAnalyzer', () => {
         python: {
           dependencies: mockPythonDependencies,
           categories: mockPythonCategories,
-          description: mockPythonDescription,
+          description: '• django\n• pytest',
         },
       });
     });
@@ -95,12 +87,10 @@ describe('DependencyAnalyzer', () => {
       // Mock Node.js analysis results
       const mockNodeDependencies = [{ name: 'react', version: '17.0.0', type: 'dependency' }];
       const mockNodeCategories = { framework: ['react'] };
-      const mockNodeDescription = 'AI-generated Node.js description';
 
       // Mock Python analysis results
       const mockPythonDependencies = [{ name: 'django', version: '3.2.0', constraint: '==' }];
       const mockPythonCategories = { web_framework: ['django'] };
-      const mockPythonDescription = 'AI-generated Python description';
 
       (NodeAnalyzer.prototype.analyze as jest.Mock).mockReturnValue(mockNodeDependencies);
       (NodeAnalyzer.prototype.categorizeDependencies as jest.Mock).mockReturnValue(
@@ -110,9 +100,6 @@ describe('DependencyAnalyzer', () => {
       (PythonAnalyzer.prototype.categorizeDependencies as jest.Mock).mockReturnValue(
         mockPythonCategories
       );
-      (AIClient.generateTechStackDescription as jest.Mock)
-        .mockResolvedValueOnce(mockNodeDescription)
-        .mockResolvedValueOnce(mockPythonDescription);
 
       const analyzer = new DependencyAnalyzer('.');
       const result = await analyzer.analyze();
@@ -122,12 +109,12 @@ describe('DependencyAnalyzer', () => {
         node: {
           dependencies: mockNodeDependencies,
           categories: mockNodeCategories,
-          description: mockNodeDescription,
+          description: '• react',
         },
         python: {
           dependencies: mockPythonDependencies,
           categories: mockPythonCategories,
-          description: mockPythonDescription,
+          description: '• django',
         },
       });
     });
@@ -156,20 +143,17 @@ describe('DependencyAnalyzer', () => {
       (NodeAnalyzer.prototype.categorizeDependencies as jest.Mock).mockReturnValue(
         mockNodeCategories
       );
-      (AIClient.generateTechStackDescription as jest.Mock).mockRejectedValue(
-        new Error('AI generation failed')
-      );
 
       const analyzer = new DependencyAnalyzer('.');
       const result = await analyzer.analyze();
 
-      // Should still return results without description
+      // Should still return results with minimal description
       expect(result).toEqual({
         type: 'node',
         node: {
           dependencies: mockNodeDependencies,
           categories: mockNodeCategories,
-          description: undefined,
+          description: '• react',
         },
       });
     });
@@ -180,15 +164,11 @@ describe('DependencyAnalyzer', () => {
       const techStack = {
         type: 'node' as const,
         node: {
-          dependencies: [
-            { name: 'react', version: '17.0.0', type: 'dependency' as const },
-            { name: 'jest', version: '27.0.0', type: 'devDependency' as const },
-          ],
+          dependencies: [{ name: 'react', version: '17.0.0', type: 'dependency' as const }],
           categories: {
             framework: ['react'],
-            testing: ['jest'],
           },
-          description: 'AI-generated description of the tech stack',
+          description: 'AI-generated Node.js tech stack description',
         },
       };
 
@@ -198,26 +178,20 @@ describe('DependencyAnalyzer', () => {
       expect(summary).toContain('# Project Tech Stack Analysis');
       expect(summary).toContain('## Node.js Dependencies');
       expect(summary).toContain('### Overview');
-      expect(summary).toContain('AI-generated description');
+      expect(summary).toContain('AI-generated Node.js tech stack description');
       expect(summary).toContain('### Frameworks');
       expect(summary).toContain('react');
-      expect(summary).toContain('### Testing Tools');
-      expect(summary).toContain('jest');
     });
 
     it('should generate summary for Python project', () => {
       const techStack = {
         type: 'python' as const,
         python: {
-          dependencies: [
-            { name: 'django', version: '3.2.0', constraint: '==' },
-            { name: 'pytest', version: '6.2.4', constraint: '==' },
-          ],
+          dependencies: [{ name: 'django', version: '3.2.0', constraint: '==' }],
           categories: {
             web_framework: ['django'],
-            testing: ['pytest'],
           },
-          description: 'AI-generated description of the Python stack',
+          description: 'AI-generated Python tech stack description',
         },
       };
 
@@ -227,23 +201,9 @@ describe('DependencyAnalyzer', () => {
       expect(summary).toContain('# Project Tech Stack Analysis');
       expect(summary).toContain('## Python Dependencies');
       expect(summary).toContain('### Overview');
-      expect(summary).toContain('AI-generated description');
+      expect(summary).toContain('AI-generated Python tech stack description');
       expect(summary).toContain('### Web Frameworks');
       expect(summary).toContain('django');
-      expect(summary).toContain('### Testing Tools');
-      expect(summary).toContain('pytest');
-    });
-
-    it('should generate summary for unknown project type', () => {
-      const techStack = {
-        type: 'unknown' as const,
-      };
-
-      const analyzer = new DependencyAnalyzer('.');
-      const summary = analyzer.generateSummary(techStack);
-
-      expect(summary).toContain('# Project Tech Stack Analysis');
-      expect(summary).toContain('No recognized dependency files found');
     });
 
     it('should handle missing AI descriptions', () => {

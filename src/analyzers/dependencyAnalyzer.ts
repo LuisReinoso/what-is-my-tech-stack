@@ -2,7 +2,6 @@ import { FileReader } from '../utils/fileReader.js';
 import { NodeAnalyzer } from './nodeAnalyzer.js';
 import { PythonAnalyzer } from './pythonAnalyzer.js';
 import { AIClient } from '../ai/openai.js';
-import { formatPrompt, NODE_ANALYSIS_PROMPT, PYTHON_ANALYSIS_PROMPT } from '../ai/prompts.js';
 
 interface ProjectTechStack {
   type: 'node' | 'python' | 'both' | 'unknown';
@@ -48,10 +47,9 @@ export class DependencyAnalyzer {
       // Get AI-generated description
       let nodeDescription: string | undefined;
       try {
-        nodeDescription = await AIClient.generateTechStackDescription(
-          { dependencies: nodeDependencies, categories: nodeCategories },
-          'markdown'
-        );
+        // Generate a minimal list of technologies
+        const techList = nodeDependencies.map((dep) => `• ${dep.name}`).join('\n');
+        nodeDescription = techList;
       } catch (error) {
         console.warn(
           'Failed to generate Node.js tech stack description:',
@@ -74,10 +72,9 @@ export class DependencyAnalyzer {
       // Get AI-generated description
       let pythonDescription: string | undefined;
       try {
-        pythonDescription = await AIClient.generateTechStackDescription(
-          { dependencies: pythonDependencies, categories: pythonCategories },
-          'markdown'
-        );
+        // Generate a minimal list of technologies
+        const techList = pythonDependencies.map((dep) => `• ${dep.name}`).join('\n');
+        pythonDescription = techList;
       } catch (error) {
         console.warn('Failed to generate Python tech stack description:', (error as Error).message);
       }

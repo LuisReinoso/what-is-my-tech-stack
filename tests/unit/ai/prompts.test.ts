@@ -3,6 +3,8 @@ import {
   NODE_ANALYSIS_PROMPT,
   PYTHON_ANALYSIS_PROMPT,
   CATEGORIZATION_PROMPT,
+  FOCUS_AREA_PROMPT,
+  TECH_FOCUS_PROMPT,
   OUTPUT_FORMATS,
   formatPrompt,
 } from '../../../src/ai/prompts.js';
@@ -10,48 +12,89 @@ import {
 describe('Prompts', () => {
   describe('BASE_TECH_STACK_PROMPT', () => {
     it('should contain essential instructions', () => {
-      expect(BASE_TECH_STACK_PROMPT).toContain('analyze');
-      expect(BASE_TECH_STACK_PROMPT).toContain('tech stack');
-      expect(BASE_TECH_STACK_PROMPT).toContain('CV');
+      expect(BASE_TECH_STACK_PROMPT).toContain('ONLY');
+      expect(BASE_TECH_STACK_PROMPT).toContain('technology names');
+      expect(BASE_TECH_STACK_PROMPT).toContain('NO descriptions');
+      expect(BASE_TECH_STACK_PROMPT).toContain('NO explanations');
     });
   });
 
   describe('NODE_ANALYSIS_PROMPT', () => {
     it('should contain Node.js specific instructions', () => {
-      expect(NODE_ANALYSIS_PROMPT).toContain('Node.js');
-      expect(NODE_ANALYSIS_PROMPT).toContain('frameworks');
-      expect(NODE_ANALYSIS_PROMPT).toContain('testing');
+      expect(NODE_ANALYSIS_PROMPT).toContain('ONLY');
+      expect(NODE_ANALYSIS_PROMPT).toContain('technology names');
       expect(NODE_ANALYSIS_PROMPT).toContain('{{dependencies}}');
+      expect(NODE_ANALYSIS_PROMPT).toContain('NO descriptions');
+      expect(NODE_ANALYSIS_PROMPT).toContain('NO explanations');
+      expect(NODE_ANALYSIS_PROMPT).toContain('NO headers');
+      expect(NODE_ANALYSIS_PROMPT).toContain('NO categories');
+      expect(NODE_ANALYSIS_PROMPT).toContain('NO versions');
     });
   });
 
   describe('PYTHON_ANALYSIS_PROMPT', () => {
     it('should contain Python specific instructions', () => {
-      expect(PYTHON_ANALYSIS_PROMPT).toContain('Python');
-      expect(PYTHON_ANALYSIS_PROMPT).toContain('frameworks');
-      expect(PYTHON_ANALYSIS_PROMPT).toContain('data processing');
+      expect(PYTHON_ANALYSIS_PROMPT).toContain('ONLY');
+      expect(PYTHON_ANALYSIS_PROMPT).toContain('technology names');
       expect(PYTHON_ANALYSIS_PROMPT).toContain('{{dependencies}}');
+      expect(PYTHON_ANALYSIS_PROMPT).toContain('NO descriptions');
+      expect(PYTHON_ANALYSIS_PROMPT).toContain('NO explanations');
+      expect(PYTHON_ANALYSIS_PROMPT).toContain('NO headers');
+      expect(PYTHON_ANALYSIS_PROMPT).toContain('NO categories');
+      expect(PYTHON_ANALYSIS_PROMPT).toContain('NO versions');
     });
   });
 
   describe('CATEGORIZATION_PROMPT', () => {
     it('should contain categorization instructions', () => {
-      expect(CATEGORIZATION_PROMPT).toContain('Categorize');
-      expect(CATEGORIZATION_PROMPT).toContain('Frontend');
-      expect(CATEGORIZATION_PROMPT).toContain('Backend');
-      expect(CATEGORIZATION_PROMPT).toContain('JSON');
+      expect(CATEGORIZATION_PROMPT).toContain('Group these technologies');
+      expect(CATEGORIZATION_PROMPT).toContain('Categories to use');
+      expect(CATEGORIZATION_PROMPT).toContain('Core Technologies');
+      expect(CATEGORIZATION_PROMPT).toContain('Testing');
+      expect(CATEGORIZATION_PROMPT).toContain('Development Tools');
       expect(CATEGORIZATION_PROMPT).toContain('{{dependencies}}');
+      expect(CATEGORIZATION_PROMPT).toContain('NO descriptions');
+      expect(CATEGORIZATION_PROMPT).toContain('NO explanations');
+    });
+  });
+
+  describe('FOCUS_AREA_PROMPT', () => {
+    it('should contain focus area instructions', () => {
+      expect(FOCUS_AREA_PROMPT).toContain('Filter and return ONLY');
+      expect(FOCUS_AREA_PROMPT).toContain('{{dependencies}}');
+      expect(FOCUS_AREA_PROMPT).toContain('{{focusArea}}');
+      expect(FOCUS_AREA_PROMPT).toContain('frontend, backend, or fullstack');
+      expect(FOCUS_AREA_PROMPT).toContain('JSON array');
+      expect(FOCUS_AREA_PROMPT).toContain('NO descriptions');
+      expect(FOCUS_AREA_PROMPT).toContain('NO explanations');
+      expect(FOCUS_AREA_PROMPT).toContain('NO categories');
+    });
+  });
+
+  describe('TECH_FOCUS_PROMPT', () => {
+    it('should contain tech focus instructions', () => {
+      expect(TECH_FOCUS_PROMPT).toContain('Filter and return ONLY');
+      expect(TECH_FOCUS_PROMPT).toContain('{{dependencies}}');
+      expect(TECH_FOCUS_PROMPT).toContain('{{techFocus}}');
+      expect(TECH_FOCUS_PROMPT).toContain('Core libraries and frameworks');
+      expect(TECH_FOCUS_PROMPT).toContain('Testing tools');
+      expect(TECH_FOCUS_PROMPT).toContain('Development tools');
+      expect(TECH_FOCUS_PROMPT).toContain('Related ecosystem packages');
+      expect(TECH_FOCUS_PROMPT).toContain('JSON array');
+      expect(TECH_FOCUS_PROMPT).toContain('NO descriptions');
+      expect(TECH_FOCUS_PROMPT).toContain('NO explanations');
+      expect(TECH_FOCUS_PROMPT).toContain('NO categories');
     });
   });
 
   describe('OUTPUT_FORMATS', () => {
     it('should define markdown format correctly', () => {
       expect(OUTPUT_FORMATS.markdown).toEqual({
-        header: '# ',
-        subheader: '## ',
-        section: '### ',
-        list: '- ',
-        codeBlock: '```',
+        header: '',
+        subheader: '### ',
+        section: '',
+        list: '• ',
+        codeBlock: '',
       });
     });
 
@@ -60,7 +103,7 @@ describe('Prompts', () => {
         header: '',
         subheader: '',
         section: '',
-        list: '* ',
+        list: '• ',
         codeBlock: '',
       });
     });

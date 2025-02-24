@@ -7,6 +7,7 @@ config();
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second
+const MODEL = 'gpt-4o-mini';
 
 if (!OPENAI_API_KEY) {
   throw new Error('OPENAI_API_KEY environment variable is not set');
@@ -29,7 +30,7 @@ export class AIClient {
       try {
         const prompt = this.createPrompt(techStack, format);
         const response = await openai.chat.completions.create({
-          model: 'gpt-4o-mini',
+          model: MODEL,
           messages: [
             {
               role: 'system',
@@ -111,7 +112,7 @@ Group them into categories like:
 Return the result as a JSON object where each key is a category and the value is an array of dependency names.`;
 
         const response = await openai.chat.completions.create({
-          model: 'gpt-4o-mini',
+          model: MODEL,
           messages: [
             {
               role: 'system',
@@ -147,5 +148,60 @@ Return the result as a JSON object where each key is a category and the value is
       }
     }
     throw new Error('Failed to categorize dependencies');
+  }
+
+  /**
+   * Filters technologies based on a specific focus or area
+   */
+  static async filterTechnologies(prompt: string): Promise<string[]> {
+    let retries = 0;
+    while (retries < MAX_RETRIES) {
+      try {
+        const response = await openai.chat.completions.create({
+          model: MODEL,
+          messages: [
+            {
+              role: 'system',
+              content:
+                'You are a technical expert who specializes in analyzing and filtering technology stacks. Always return your response as a JSON array.',
+            },
+            {
+              role: 'user',
+              content: prompt + '\n\nReturn the result as a JSON array.',
+            },
+          ],
+          temperature: 0.3,
+          max_tokens: 500,
+        });
+
+        if (!response.choices[0]?.message?.content) {
+          throw new Error('No content in OpenAI response');
+        }
+
+        const content = response.choices[0].message.content;
+        try {
+          return JSON.parse(content);
+        } catch (error) {
+          // If the response is not valid JSON, try to extract array from the text
+          const matches = content.match(/\[(.*)\]/s);
+          if (matches) {
+            const arrayContent = matches[0];
+            return JSON.parse(arrayContent);
+          }
+          throw new Error('Failed to parse AI response as JSON array');
+        }
+      } catch (error) {
+        retries++;
+        if (retries === MAX_RETRIES) {
+          throw new Error(
+            `Failed to filter technologies after ${MAX_RETRIES} attempts: ${
+              (error as Error).message
+            }`
+          );
+        }
+        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY * retries));
+      }
+    }
+    throw new Error('Failed to filter technologies');
   }
 }

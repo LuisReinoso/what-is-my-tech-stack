@@ -1,77 +1,124 @@
 /**
  * Base prompt for tech stack analysis
  */
-export const BASE_TECH_STACK_PROMPT = `As a technical expert, analyze this project's tech stack and provide a clear, professional description.
-Focus on how the technologies work together and their benefits.
-Keep the descriptions concise but informative, suitable for a CV or project documentation.`;
+export const BASE_TECH_STACK_PROMPT = `Return ONLY a list of technology names. NO descriptions. NO explanations.`;
 
 /**
  * Prompt for Node.js project analysis
  */
-export const NODE_ANALYSIS_PROMPT = `Analyze the following Node.js project dependencies and provide insights about:
-1. The main frameworks and libraries used
-2. The development and build tooling
-3. Testing and quality assurance tools with testing frameworks
-4. Any notable patterns or architectural choices suggested by the dependencies
-
-Dependencies:
+export const NODE_ANALYSIS_PROMPT = `List ONLY the technology names from these dependencies:
 {{dependencies}}
 
-Please provide a professional summary that would be suitable for a project description or CV.`;
+Format as:
+• Technology1
+• Technology2
+
+NO descriptions.
+NO explanations.
+NO headers.
+NO categories.
+NO versions.
+JUST the list.`;
 
 /**
  * Prompt for Python project analysis
  */
-export const PYTHON_ANALYSIS_PROMPT = `Analyze the following Python project dependencies and provide insights about:
-1. The main frameworks and libraries used
-2. Data processing and data processing capabilities
-3. Testing and development tools
-4. Any notable patterns or architectural choices suggested by the dependencies
-
-Dependencies:
+export const PYTHON_ANALYSIS_PROMPT = `List ONLY the technology names from these dependencies:
 {{dependencies}}
 
-Please provide a professional summary that would be suitable for a project description or CV.`;
+Format as:
+• Technology1
+• Technology2
+
+NO descriptions.
+NO explanations.
+NO headers.
+NO categories.
+NO versions.
+JUST the list.`;
 
 /**
  * Prompt for dependency categorization
  */
-export const CATEGORIZATION_PROMPT = `Categorize the following dependencies into meaningful groups:
+export const CATEGORIZATION_PROMPT = `Group these technologies into ONLY these categories:
+
+Technologies:
 {{dependencies}}
 
-Group them into appropriate categories such as:
-- Frontend Frameworks
-- Backend Frameworks
-- Testing Tools
-- Build Tools
-- Database
-- Utilities
-etc.
+Categories to use:
+• Core Technologies
+• Testing
+• Development Tools
 
-Consider the following guidelines:
-1. Create logical groupings based on primary purpose
-2. Place multi-purpose libraries in their most common use case
-3. Create new categories if needed for specialized tools
-4. Ensure each dependency is categorized appropriately
+Rules:
+• NO descriptions
+• NO explanations
+• NO additional categories
+• NO headers except category names
+• NO versions
+• ONLY technology names under each category
 
-Return the categorization as a JSON object where each key is a category and the value is an array of dependency names.`;
+Example format:
+{
+  "Core Technologies": ["tech1", "tech2"],
+  "Testing": ["test1", "test2"],
+  "Development Tools": ["tool1", "tool2"]
+}`;
+
+/**
+ * Prompt for filtering by focus area
+ */
+export const FOCUS_AREA_PROMPT = `Given these technologies:
+{{dependencies}}
+
+Filter and return ONLY the technologies that are relevant to the {{focusArea}} area.
+Focus area is: {{focusArea}} (frontend, backend, or fullstack)
+
+Rules:
+• Return ONLY the technology names that are relevant
+• Return as a JSON array of strings
+• NO descriptions
+• NO explanations
+• NO categories`;
+
+/**
+ * Prompt for filtering by specific technology
+ */
+export const TECH_FOCUS_PROMPT = `Given these technologies:
+{{dependencies}}
+
+Filter and return ONLY the technologies that are related to {{techFocus}}.
+The focus technology is: {{techFocus}}
+
+Consider:
+• Core libraries and frameworks
+• Testing tools specific to this technology
+• Development tools commonly used with this technology
+• Related ecosystem packages
+
+Rules:
+• Return ONLY the technology names that are relevant
+• Return as a JSON array of strings
+• NO descriptions
+• NO explanations
+• NO categories`;
 
 /**
  * Formats for different output types
  */
 export const OUTPUT_FORMATS = {
   markdown: {
-    header: '# ',
-    subheader: '## ',
-    section: '### ',
-    list: '- ',
-    codeBlock: '```',
+    header: '',
+    subheader: '### ',
+    section: '',
+    list: '• ',
+    codeBlock: '',
   },
   text: {
     header: '',
     subheader: '',
     section: '',
-    list: '* ',
+    list: '• ',
     codeBlock: '',
   },
   json: {
